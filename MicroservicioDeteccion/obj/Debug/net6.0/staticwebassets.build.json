@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "VKonvHWqcmwW4yD2jDoWeVJV1IeDTxPgDfSmBzYRqfk=",
+  "Source": "MicroservicioDeteccion",
+  "BasePath": "_content/MicroservicioDeteccion",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

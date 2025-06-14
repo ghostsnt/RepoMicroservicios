@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Frontend con inactividad</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script type="module">
+        import { iniciarControlEstado } from './estadoInactividad.js';
+
+        let presenciaConnection;
+        let estadoConnection;
+
+        window.conectar = () => {
+            const userId = document.getElementById("userIdInput").value;
+            const isInvisible = document.getElementById("invisibleCheckbox").checked;
+
+            // 1️⃣ Conectar al microservicio de detección (8003)
+            presenciaConnection = new signalR.HubConnectionBuilder()
+                .withUrl(`http://localhost:8003/presencia?idUsuario=${userId}&invisible=${isInvisible}`)
+                .build();
+
+            presenciaConnection.start()
+                .then(() => console.log("✅ Conectado a microservicio de detección"))
+                .catch(err => console.error("❌ Error conexión detección:", err));
+
+            // 2️⃣ Conectar al microservicio de estado (8004)
+            estadoConnection = new signalR.HubConnectionBuilder()
+                .withUrl("http://localhost:8004/userStatusHub")
+                .build();
+
+            estadoConnection.on("ReceiveStatus", (nombre, estado) => {
+                const li = document.createElement("li");
+                li.textContent = `${nombre} ahora está ${estado}`;
+                document.getElementById("statusList").appendChild(li);
+            });
+
+            estadoConnection.start()
+                .then(() => console.log("✅ Conectado al microservicio de estado"))
+                .catch(err => console.error("❌ Error conexión estado:", err));
+
+            // 3️⃣ Activar detección de inactividad (envía POST al microservicio de estado)
+            iniciarControlEstado(userId, "http://localhost:8004/api/EstadoUsuario");
+        };
+    </script>
+</head>
+<body>
+    <h2>Cliente con detección de presencia + inactividad</h2>
+
+    <label>ID Usuario: <input type="number" id="userIdInput" value="1"></label><br>
+    <label><input type="checkbox" id="invisibleCheckbox"> Modo invisible</label><br>
+    <button onclick="conectar()">Conectar</button>
+
+    <h3>Actualizaciones recibidas:</h3>
+    <ul id="statusList"></ul>
+</body>
+</html>
